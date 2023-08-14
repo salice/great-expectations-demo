@@ -22,7 +22,7 @@ headers = {
     "X-Api-Key": os.getenv("FEC_API_KEY")
 }
 
-def write_data(data):
+def parse_data(data):
     res = data["results"]
     flatten = []
     for i in res:
@@ -30,10 +30,13 @@ def write_data(data):
         for j in inner_list:
             flatten.append(j)
     df = pd.json_normalize(flatten)
+    return df
+
+def write_data(df):
     client = boto3.client('s3')
     date = datetime.now()
     key = f"{date.strftime('%Y')}/{date.strftime('%m')}/ \
-            {date.strftime('%d')}/schedule-a.csv"
+            schedule-a-{date.strftime('%d')}.csv"
     buffer = StringIO()
     df.to_csv(buffer)
     client.put_object(
@@ -86,13 +89,16 @@ def get_indiv_contributions(transaction_period=2024, **kwargs):
     }
     res = requests.get(url=url, headers=headers, params=schedule_data)
     content = json.loads(res.content.decode("utf-8"))
-    # print(content["results"])
-    all_data = paginate_results(content, url, schedule_data)
-    return all_data
+    print(content["pagination"])
+    if content["pagination"]["last_indexes"]:
+        all_data = paginate_results(content, url, schedule_data)
+        df = parse_data(all_data)
+    else:
+        df = parse_data(content)
+    write_data(df)
 
 
 if __name__ == "__main__":
-    min_date = (datetime.now() - timedelta(days=2)).strftime("%m/%d/%Y")
+    min_date = (datetime.now() - timedelta(days=14)).strftime("%m/%d/%Y")
     max_date = (datetime.now() - timedelta(days=1)).strftime("%m/%d/%Y")
-    data = get_indiv_contributions(min_date=min_date, max_date=max_date)
-    write_data(data=data)
+    get_indiv_contributions(min_date=min_date, max_date=max_date)
