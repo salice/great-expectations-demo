@@ -1,0 +1,6 @@
+name: gx-demo
+config:
+  aws:region: us-west-2
+runtime:
+  name: python
+description: Create bucket to demo GX
