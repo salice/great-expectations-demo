@@ -62,8 +62,7 @@ def paginate_results(data, url, params):
     num_calls = 1
     new_params = params
     last_call = data
-    while (last_call["pagination"]["last_indexes"] or \
-                p <= last_call["pagination"]["pages"]):
+    while last_call["pagination"]["last_indexes"]:
         print("params", new_params)
         print("pagination params", last_call["pagination"])
         new_params = update_params(new_params, last_call["pagination"])
