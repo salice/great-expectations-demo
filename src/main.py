@@ -95,7 +95,7 @@ def get_indiv_contributions(transaction_period=2024, **kwargs):
         df = parse_data(all_data)
     else:
         df = parse_data(content)
-    write_data(df)
+    write_data(df, min_date=min_date, max_date=max_date)
 
 
 if __name__ == "__main__":
