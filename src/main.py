@@ -64,9 +64,12 @@ def paginate_results(data, url, params):
     last_call = data
     while (last_call["pagination"]["last_indexes"] or \
                 p <= last_call["pagination"]["pages"]):
+        print("params", new_params)
+        print("pagination params", last_call["pagination"])
         new_params = update_params(new_params, last_call["pagination"])
         res = s.get(url=url, headers=headers, params=new_params)
         if res.status_code == 200:
+            print("working on page", num_calls)
             content = json.loads(res.content.decode("utf-8"))
             p +=1
             num_calls += 1
