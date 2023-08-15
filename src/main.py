@@ -26,17 +26,18 @@ def parse_data(data):
     res = data["results"]
     flatten = []
     for i in res:
-        inner_list = eval(i)
-        for j in inner_list:
+        for j in i:
             flatten.append(j)
     df = pd.json_normalize(flatten)
     return df
 
-def write_data(df):
+def write_data(df, min_date, max_date):
     client = boto3.client('s3')
     date = datetime.now()
-    key = f"{date.strftime('%Y')}/{date.strftime('%m')}/ \
-            schedule-a-{date.strftime('%d')}.csv"
+    min_key = "".join(min_date.split("/"))
+    max_key = "".join(max_date.split("/"))
+    key = f"{date.strftime('%Y')}/ \
+            schedule-a-{min_key}-{max_key}.csv"
     buffer = StringIO()
     df.to_csv(buffer)
     client.put_object(
@@ -59,7 +60,6 @@ def paginate_results(data, url, params):
     all_data = []
     all_data.append(data)
     p = 0
-    num_calls = 1
     new_params = params
     last_call = data
     while last_call["pagination"]["last_indexes"]:
@@ -68,13 +68,11 @@ def paginate_results(data, url, params):
         new_params = update_params(new_params, last_call["pagination"])
         res = s.get(url=url, headers=headers, params=new_params)
         if res.status_code == 200:
-            print("working on page", num_calls)
             content = json.loads(res.content.decode("utf-8"))
             p +=1
-            num_calls += 1
             last_call = content
             all_data.append(content)
-            sleep(2)
+            sleep(1)
         else:
             print(res.content.decode("utf-8"))
             break
