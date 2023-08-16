@@ -1,6 +1,8 @@
 name: gx-demo
 config:
   aws:region: us-west-2
+  github:account: salice
+  github:repo: great-expectations-demo
 runtime:
   name: python
 description: Create bucket to demo GX
